@@ -1,9 +1,11 @@
-FROM golang:1.20.4
+FROM golang:1.20.4 as build
 
-WORKDIR /app
+WORKDIR /src
 COPY go.mod go.sum ./
-RUN go mod download
 COPY main.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /admin-bot
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go-vnp-admin
-CMD ["/go-vnp-admin"]
+
+FROM ubuntu:latest
+COPY --from=build /admin-bot /admin-bot
+CMD ["/admin-bot"]
