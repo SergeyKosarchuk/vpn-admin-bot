@@ -25,3 +25,6 @@ go.work
 
 # wg-easy config
 .wg-easy
+
+# vscode
+.vscode

@@ -9,19 +9,11 @@ import (
 	"github.com/opus-domini/fast-shot/constant/mime"
 )
 
-type Device struct {
+type DeviceResponse struct {
 	Id      string `json:"id"`
 	Name    string `json:"name"`
 	Enabled bool `json:"enabled"`
 }
-
-func (d Device) String() string {
-	if d.Enabled {
-		return d.Name + " ✅"
-	}
-	return d.Name + " ❌"
-}
-
 
 
 type WgClient struct {
@@ -31,10 +23,10 @@ type WgClient struct {
 
 
 type APIClient interface {
-	List() ([]Device, error)
+	List() ([]DeviceResponse, error)
 	Enable(id string) error
 	Disable(id string) error
-	Create(name string) (Device, error)
+	Create(name string) error
 	Delete(id string) error
 }
 
@@ -56,8 +48,8 @@ func (wg *WgClient) authenticate(password string) error {
 }
 
 
-func (wg WgClient) List() ([]Device, error) {
-	var devices []Device
+func (wg WgClient) List() ([]DeviceResponse, error) {
+	var devices []DeviceResponse
 	response, err := wg.httpClient.GET("/api/wireguard/client").Header().Add("Cookie", wg.cookie).Send()
 
 	if err != nil {
@@ -114,36 +106,25 @@ func (wg WgClient) Disable(id string) error {
 	return nil
 }
 
-func (wg WgClient) Create(name string) (Device, error) {
-	var device Device
+func (wg WgClient) Create(name string) error {
 	payload := map[string]interface{}{"name": name}
-	response, err := wg.httpClient.POST("/api/wireguard").Body().AsJSON(payload).Send()
+	builder := wg.httpClient.POST("/api/wireguard/client").Header().Add("Cookie", wg.cookie)
+	response, err := builder.Body().AsJSON(payload).Send()
 
 	if err != nil {
-		return device, nil
+		return err
 	}
 
 	if !response.Is2xxSuccessful() {
-		return device, fmt.Errorf("unable to create device %d response", response.StatusCode())
-	}
-	data, err := io.ReadAll(response.RawBody())
-
-	if err != nil {
-		return device, err
+		return fmt.Errorf("unable to create device %d response", response.StatusCode())
 	}
 
-	err = json.Unmarshal(data, &device)
-
-	if err != nil {
-		return device, err
-	}
-
-	return device, nil
+	return nil
 }
 
 
 func (wg WgClient) Delete(id string) error {
-	url := fmt.Sprintf("/api/wireguard/client/%s/enable", id)
+	url := fmt.Sprintf("/api/wireguard/client/%s", id)
 	response, err := wg.httpClient.DELETE(url).Header().Add("Cookie", wg.cookie).Send()
 
 	if err != nil {
