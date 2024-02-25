@@ -1,12 +1,12 @@
-FROM golang:1.21.4 as build
+FROM golang:1.21.4
 
-WORKDIR /src
+WORKDIR /usr/src/app
+
 COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
 COPY main.go ./
 COPY pkg ./pkg
-RUN CGO_ENABLED=0 GOOS=linux go build -o /admin-bot
+RUN go build -o vpn-admin
 
-FROM ubuntu:latest
-RUN apt update && apt upgrade -y
-COPY --from=build /admin-bot /admin-bot
-CMD ["/admin-bot"]
+CMD ["./vpn-admin"]
