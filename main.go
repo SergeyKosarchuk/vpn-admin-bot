@@ -8,15 +8,10 @@ import (
 
 	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/processor"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/joho/godotenv"
 )
 
 
 func main() {
-	err := godotenv.Load()
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
 	telegramToken, ok := os.LookupEnv("TELEGRAM_API_TOKEN")
 	if !ok {
 		log.Fatalf("telegram token not set")
