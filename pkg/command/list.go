@@ -6,8 +6,14 @@ import (
 )
 
 type List struct {
-	NoInputCommand
 	Client client.APIClient
+}
+
+
+func (c *List) Action(input string, output *tgbotapi.MessageConfig) error {
+	output.Text = "Show menu"
+	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	return nil
 }
 
 

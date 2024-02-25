@@ -28,6 +28,8 @@ type APIClient interface {
 	Disable(id string) error
 	Create(name string) error
 	Delete(id string) error
+	GetQRCode(id string) (io.ReadCloser, error)
+	GetConfig(id string) (io.ReadCloser, error)
 }
 
 
@@ -138,6 +140,35 @@ func (wg WgClient) Delete(id string) error {
 	return nil
 }
 
+func (wg WgClient) GetQRCode(id string) (io.ReadCloser, error) {
+	url := fmt.Sprintf("/api/wireguard/client/%s/qrcode.svg", id)
+	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !response.Is2xxSuccessful() {
+		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode())
+	}
+
+	return response.RawBody(), nil
+}
+
+func (wg WgClient) GetConfig(id string) (io.ReadCloser, error) {
+	url := fmt.Sprintf("/api/wireguard/client/%s/configuration", id)
+	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !response.Is2xxSuccessful() {
+		return nil, fmt.Errorf("unable to get a config %d response", response.StatusCode())
+	}
+
+	return response.RawBody(), nil
+}
 
 func NewWGClient(url, password string) (APIClient, error) {
 	builder := fastshot.NewClient(url)

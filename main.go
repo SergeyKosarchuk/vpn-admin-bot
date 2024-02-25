@@ -45,7 +45,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	mp := processor.NewMessageProcessor(adminUsername, wgClient)
+	mp := processor.NewMessageProcessor(adminUsername, wgClient, bot)
 
 	if err != nil {
 		log.Panic(err)

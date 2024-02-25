@@ -5,8 +5,13 @@ import (
 )
 
 
-type PingCommand struct {NoInputCommand}
+type PingCommand struct {}
 
+func (c *PingCommand) Action(input string, output *tgbotapi.MessageConfig) error {
+	output.Text = "Show menu"
+	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	return nil
+}
 
 func (c *PingCommand) Prepare(output *tgbotapi.MessageConfig) error {
 	output.Text = "PONG"

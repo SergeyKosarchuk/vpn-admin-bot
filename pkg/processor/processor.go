@@ -41,8 +41,8 @@ func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.Messa
 	return response, err
 }
 
-func NewMessageProcessor(adminUsername string, client client.APIClient) *MessageProcessor {
-	builder := botCommand.NewCommandBuilder(client)
+func NewMessageProcessor(adminUsername string, client client.APIClient, bot *tgbotapi.BotAPI) *MessageProcessor {
+	builder := botCommand.NewCommandBuilder(client, bot)
 
 	return &MessageProcessor{
 		command: builder.Build("empty"),
