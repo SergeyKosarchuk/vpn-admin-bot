@@ -8,7 +8,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-
 func selectDeviceMarkup(devices []client.DeviceResponse) tgbotapi.ReplyKeyboardMarkup {
 	rows := make([][]tgbotapi.KeyboardButton, len(devices))
 
@@ -30,7 +29,6 @@ func listDevicesMsg(devices []client.DeviceResponse) string {
 
 	return sb.String()
 }
-
 
 func selectIdFromText(text string) (string, error) {
 	parts := strings.Split(text, " ")

@@ -5,12 +5,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-
 type Command interface {
 	Prepare(output *tgbotapi.MessageConfig) error
 	Action(input string, output *tgbotapi.MessageConfig) error
 }
-
 
 type CommandBuilder interface {
 	Build(name string) Command
@@ -18,7 +16,7 @@ type CommandBuilder interface {
 
 type commandBuilder struct {
 	Client api.APIClient
-	Bot *tgbotapi.BotAPI
+	Bot    *tgbotapi.BotAPI
 }
 
 func (cb commandBuilder) Build(name string) Command {

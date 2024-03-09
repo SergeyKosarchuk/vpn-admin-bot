@@ -12,15 +12,13 @@ import (
 type DeviceResponse struct {
 	Id      string `json:"id"`
 	Name    string `json:"name"`
-	Enabled bool `json:"enabled"`
+	Enabled bool   `json:"enabled"`
 }
-
 
 type WgClient struct {
 	httpClient fastshot.ClientHttpMethods
-	cookie string
+	cookie     string
 }
-
 
 type APIClient interface {
 	List() ([]DeviceResponse, error)
@@ -32,11 +30,9 @@ type APIClient interface {
 	GetConfig(id string) (io.ReadCloser, error)
 }
 
-
 func (wg *WgClient) authenticate(password string) error {
 	payload := map[string]interface{}{"password": password}
 	response, err := wg.httpClient.POST("/api/session").Body().AsJSON(payload).Send()
-
 	if err != nil {
 		return err
 	}
@@ -49,11 +45,9 @@ func (wg *WgClient) authenticate(password string) error {
 	return nil
 }
 
-
 func (wg WgClient) List() ([]DeviceResponse, error) {
 	var devices []DeviceResponse
 	response, err := wg.httpClient.GET("/api/wireguard/client").Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return devices, err
 	}
@@ -63,13 +57,11 @@ func (wg WgClient) List() ([]DeviceResponse, error) {
 	}
 
 	data, err := io.ReadAll(response.RawBody())
-
 	if err != nil {
 		return devices, err
 	}
 
 	err = json.Unmarshal(data, &devices)
-
 	if err != nil {
 		return devices, err
 	}
@@ -80,7 +72,6 @@ func (wg WgClient) List() ([]DeviceResponse, error) {
 func (wg WgClient) Enable(id string) error {
 	url := fmt.Sprintf("/api/wireguard/client/%s/enable", id)
 	response, err := wg.httpClient.POST(url).Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return err
 	}
@@ -92,11 +83,9 @@ func (wg WgClient) Enable(id string) error {
 	return nil
 }
 
-
 func (wg WgClient) Disable(id string) error {
 	url := fmt.Sprintf("/api/wireguard/client/%s/disable", id)
 	response, err := wg.httpClient.POST(url).Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return err
 	}
@@ -112,7 +101,6 @@ func (wg WgClient) Create(name string) error {
 	payload := map[string]interface{}{"name": name}
 	builder := wg.httpClient.POST("/api/wireguard/client").Header().Add("Cookie", wg.cookie)
 	response, err := builder.Body().AsJSON(payload).Send()
-
 	if err != nil {
 		return err
 	}
@@ -124,11 +112,9 @@ func (wg WgClient) Create(name string) error {
 	return nil
 }
 
-
 func (wg WgClient) Delete(id string) error {
 	url := fmt.Sprintf("/api/wireguard/client/%s", id)
 	response, err := wg.httpClient.DELETE(url).Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return err
 	}
@@ -143,7 +129,6 @@ func (wg WgClient) Delete(id string) error {
 func (wg WgClient) GetQRCode(id string) (io.ReadCloser, error) {
 	url := fmt.Sprintf("/api/wireguard/client/%s/qrcode.svg", id)
 	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +143,6 @@ func (wg WgClient) GetQRCode(id string) (io.ReadCloser, error) {
 func (wg WgClient) GetConfig(id string) (io.ReadCloser, error) {
 	url := fmt.Sprintf("/api/wireguard/client/%s/configuration", id)
 	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
-
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +159,6 @@ func NewWGClient(url, password string) (APIClient, error) {
 	builder = builder.Header().AddContentType(mime.JSON)
 	client := &WgClient{httpClient: builder.Build()}
 	err := client.authenticate(password)
-
 	if err != nil {
 		return nil, err
 	}

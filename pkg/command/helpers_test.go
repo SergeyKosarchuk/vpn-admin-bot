@@ -18,7 +18,6 @@ func TestSelectIdFromTextError(t *testing.T) {
 
 func TestSelectIdFromTextSuccess(t *testing.T) {
 	id, err := selectIdFromText("1. 82341644-7772-4745-a75f-ae08957d9008 (PC)")
-
 	if err != nil {
 		t.Error("expected nil error got", err)
 	}

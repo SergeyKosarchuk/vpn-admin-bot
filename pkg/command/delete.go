@@ -5,15 +5,12 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-
 type Delete struct {
 	Client client.APIClient
 }
 
-
 func (c *Delete) Prepare(output *tgbotapi.MessageConfig) error {
 	devices, err := c.Client.List()
-
 	if err != nil {
 		return err
 	}
@@ -25,13 +22,11 @@ func (c *Delete) Prepare(output *tgbotapi.MessageConfig) error {
 
 func (c *Delete) Action(input string, output *tgbotapi.MessageConfig) error {
 	id, err := selectIdFromText(input)
-
 	if err != nil {
 		return err
 	}
 
 	err = c.Client.Delete(id)
-
 	if err != nil {
 		return err
 	}

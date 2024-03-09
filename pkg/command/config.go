@@ -8,16 +8,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-
 type Config struct {
 	Client client.APIClient
-	Bot *tgbotapi.BotAPI
+	Bot    *tgbotapi.BotAPI
 }
-
 
 func (c *Config) Prepare(output *tgbotapi.MessageConfig) error {
 	devices, err := c.Client.List()
-
 	if err != nil {
 		return err
 	}
@@ -29,16 +26,14 @@ func (c *Config) Prepare(output *tgbotapi.MessageConfig) error {
 
 func (c *Config) Action(input string, output *tgbotapi.MessageConfig) error {
 	id, err := selectIdFromText(input)
-
 	if err != nil {
 		return err
 	}
 
 	dataReader, err := c.Client.GetConfig(id)
 
-	go func ()  {
+	go func() {
 		buffer, err := io.ReadAll(dataReader)
-
 		if err != nil {
 			log.Println("Unable to read a response into buffer", err)
 			return
