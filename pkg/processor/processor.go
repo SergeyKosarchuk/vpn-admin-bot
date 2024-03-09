@@ -7,16 +7,14 @@ import (
 )
 
 type MessageProcessor struct {
-	command botCommand.Command
+	command       botCommand.Command
 	adminUsername string
-	builder botCommand.CommandBuilder
+	builder       botCommand.CommandBuilder
 }
-
 
 func (mp *MessageProcessor) resposeToText(text string, output *tgbotapi.MessageConfig) error {
 	return mp.command.Action(text, output)
 }
-
 
 func (mp *MessageProcessor) resposeToCommand(commandName string, output *tgbotapi.MessageConfig) error {
 	mp.command = mp.builder.Build(commandName)
@@ -45,8 +43,8 @@ func NewMessageProcessor(adminUsername string, client client.APIClient, bot *tgb
 	builder := botCommand.NewCommandBuilder(client, bot)
 
 	return &MessageProcessor{
-		command: builder.Build("empty"),
+		command:       builder.Build("empty"),
 		adminUsername: adminUsername,
-		builder: builder,
+		builder:       builder,
 	}
 }

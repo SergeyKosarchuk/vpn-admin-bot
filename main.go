@@ -5,11 +5,9 @@ import (
 	"os"
 
 	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
-
 	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/processor"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
-
 
 func main() {
 	telegramToken, ok := os.LookupEnv("TELEGRAM_API_TOKEN")
@@ -61,7 +59,6 @@ func main() {
 		}
 
 		msg, err := mp.MakeResponse(*update.Message)
-
 		if err != nil {
 			log.Printf("Error %s", err)
 

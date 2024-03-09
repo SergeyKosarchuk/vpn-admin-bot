@@ -8,16 +8,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-
 type ShowQRCode struct {
 	Client client.APIClient
-	Bot *tgbotapi.BotAPI
+	Bot    *tgbotapi.BotAPI
 }
-
 
 func (c *ShowQRCode) Prepare(output *tgbotapi.MessageConfig) error {
 	devices, err := c.Client.List()
-
 	if err != nil {
 		return err
 	}
@@ -29,16 +26,14 @@ func (c *ShowQRCode) Prepare(output *tgbotapi.MessageConfig) error {
 
 func (c *ShowQRCode) Action(input string, output *tgbotapi.MessageConfig) error {
 	id, err := selectIdFromText(input)
-
 	if err != nil {
 		return err
 	}
 
 	dataReader, err := c.Client.GetQRCode(id)
 
-	go func ()  {
+	go func() {
 		buffer, err := io.ReadAll(dataReader)
-
 		if err != nil {
 			log.Println("Unable to read a response into buffer", err)
 			return
