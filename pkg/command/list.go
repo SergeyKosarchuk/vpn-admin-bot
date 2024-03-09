@@ -21,7 +21,12 @@ func (c *List) Prepare(output *tgbotapi.MessageConfig) error {
 		return err
 	}
 
-	output.Text = listDevicesMsg(devices)
+	if len(devices) > 0 {
+		output.Text = listDevicesMsg(devices)
+	} else {
+		output.Text = "No devices."
+	}
+
 	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	return nil
 }
