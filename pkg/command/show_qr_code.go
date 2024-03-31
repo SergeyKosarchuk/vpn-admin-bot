@@ -1,7 +1,6 @@
 package command
 
 import (
-	"io"
 	"log"
 
 	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
@@ -30,16 +29,14 @@ func (c *ShowQRCode) Action(input string, output *tgbotapi.MessageConfig) error 
 		return err
 	}
 
-	dataReader, err := c.Client.GetQRCode(id)
+	data, err := c.Client.GetQRCode(id)
+
+	if err != nil {
+		return err
+	}
 
 	go func() {
-		buffer, err := io.ReadAll(dataReader)
-		if err != nil {
-			log.Println("Unable to read a response into buffer", err)
-			return
-		}
-
-		photo := tgbotapi.NewPhoto(output.ChatID, tgbotapi.FileBytes{Name: "qrcode.svg", Bytes: buffer})
+		photo := tgbotapi.NewPhoto(output.ChatID, tgbotapi.FileBytes{Name: "qrcode.svg", Bytes: data})
 		if _, err = c.Bot.Send(photo); err != nil {
 			// TOTO: SVG files are not supported
 			log.Println(err)
