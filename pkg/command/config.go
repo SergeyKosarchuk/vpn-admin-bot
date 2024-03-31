@@ -1,7 +1,6 @@
 package command
 
 import (
-	"io"
 	"log"
 
 	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
@@ -30,16 +29,14 @@ func (c *Config) Action(input string, output *tgbotapi.MessageConfig) error {
 		return err
 	}
 
-	dataReader, err := c.Client.GetConfig(id)
+	data, err := c.Client.GetConfig(id)
+
+	if err != nil {
+		return err
+	}
 
 	go func() {
-		buffer, err := io.ReadAll(dataReader)
-		if err != nil {
-			log.Println("Unable to read a response into buffer", err)
-			return
-		}
-
-		photo := tgbotapi.NewDocument(output.ChatID, tgbotapi.FileBytes{Name: "vpn.conf", Bytes: buffer})
+		photo := tgbotapi.NewDocument(output.ChatID, tgbotapi.FileBytes{Name: "vpn.conf", Bytes: data})
 		if _, err = c.Bot.Send(photo); err != nil {
 			log.Println(err)
 		}

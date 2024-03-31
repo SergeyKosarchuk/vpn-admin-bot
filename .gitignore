@@ -29,3 +29,4 @@ go.work
 # vscode
 .vscode
 .devcontainer/devcontainer.env
+__debug_*
