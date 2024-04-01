@@ -1,24 +1,53 @@
 package processor
 
 import (
-	client "github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
+	"errors"
+
 	botCommand "github.com/SergeyKosarchuk/vpn-admin-bot/pkg/command"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+type Command interface {
+	Prepare(output *tgbotapi.MessageConfig) error
+	Action(input string, output *tgbotapi.MessageConfig) error
+}
+
 type MessageProcessor struct {
-	command       botCommand.Command
-	adminUsername string
-	builder       botCommand.CommandBuilder
+	selected       Command
+	defaultCommand Command
+	adminUsername  string
+	commands       map[string]Command
 }
 
 func (mp *MessageProcessor) resposeToText(text string, output *tgbotapi.MessageConfig) error {
-	return mp.command.Action(text, output)
+	if mp.selected != nil {
+		selected := mp.selected
+		// Command should be completed only once
+		mp.selected = nil
+		return selected.Action(text, output)
+	}
+
+	if mp.defaultCommand != nil {
+		return mp.defaultCommand.Action(text, output)
+	}
+
+	return errors.New("default command is nil")
 }
 
 func (mp *MessageProcessor) resposeToCommand(commandName string, output *tgbotapi.MessageConfig) error {
-	mp.command = mp.builder.Build(commandName)
-	return mp.command.Prepare(output)
+	command, ok := mp.commands[commandName]
+
+	if ok {
+		// TODO: Do not select a command if user response is not required
+		mp.selected = command
+		return mp.selected.Prepare(output)
+	}
+
+	if mp.defaultCommand != nil {
+		return mp.defaultCommand.Prepare(output)
+	}
+
+	return errors.New("default command is nil")
 }
 
 func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.MessageConfig, error) {
@@ -39,12 +68,16 @@ func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.Messa
 	return response, err
 }
 
-func NewMessageProcessor(adminUsername string, client client.APIClient, bot *tgbotapi.BotAPI) *MessageProcessor {
-	builder := botCommand.NewCommandBuilder(client, bot)
+func NewMessageProcessor(adminUsername string, client botCommand.APIClient, bot *tgbotapi.BotAPI) MessageProcessor {
+	commands := make(map[string]Command)
+	commands["ping"] = &botCommand.PingCommand{}
+	commands["list"] = &botCommand.List{Client: client}
+	commands["create"] = &botCommand.CreateCommand{Client: client}
+	commands["enable"] = &botCommand.Enable{Client: client}
+	commands["disable"] = &botCommand.Disable{Client: client}
+	commands["delete"] = &botCommand.Delete{Client: client}
+	commands["config"] = &botCommand.Config{Client: client, Bot: bot}
+	processor := MessageProcessor{adminUsername: adminUsername, commands: commands, defaultCommand: &botCommand.EmptyCommand{}}
 
-	return &MessageProcessor{
-		command:       builder.Build("empty"),
-		adminUsername: adminUsername,
-		builder:       builder,
-	}
+	return processor
 }

@@ -3,12 +3,11 @@ package command
 import (
 	"log"
 
-	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type ShowQRCode struct {
-	Client client.APIClient
+	Client APIClient
 	Bot    *tgbotapi.BotAPI
 }
 
