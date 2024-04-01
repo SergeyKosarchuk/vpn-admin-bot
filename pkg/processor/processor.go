@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"errors"
+
 	botCommand "github.com/SergeyKosarchuk/vpn-admin-bot/pkg/command"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -19,22 +21,33 @@ type MessageProcessor struct {
 
 func (mp *MessageProcessor) resposeToText(text string, output *tgbotapi.MessageConfig) error {
 	if mp.selected != nil {
-		return mp.selected.Action(text, output)
+		selected := mp.selected
+		// Command should be completed only once
+		mp.selected = nil
+		return selected.Action(text, output)
 	}
 
-	return mp.defaultCommand.Action(text, output)
+	if mp.defaultCommand != nil {
+		return mp.defaultCommand.Action(text, output)
+	}
+
+	return errors.New("default command is nil")
 }
 
 func (mp *MessageProcessor) resposeToCommand(commandName string, output *tgbotapi.MessageConfig) error {
 	command, ok := mp.commands[commandName]
 
 	if ok {
+		// TODO: Do not select a command if user response is not required
 		mp.selected = command
 		return mp.selected.Prepare(output)
 	}
 
-	return mp.defaultCommand.Prepare(output)
-	
+	if mp.defaultCommand != nil {
+		return mp.defaultCommand.Prepare(output)
+	}
+
+	return errors.New("default command is nil")
 }
 
 func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.MessageConfig, error) {
