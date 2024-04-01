@@ -20,16 +20,6 @@ type WgClient struct {
 	cookie     string
 }
 
-type APIClient interface {
-	List() ([]DeviceResponse, error)
-	Enable(id string) error
-	Disable(id string) error
-	Create(name string) error
-	Delete(id string) error
-	GetQRCode(id string) ([]byte, error)
-	GetConfig(id string) ([]byte, error)
-}
-
 func (wg *WgClient) authenticate(password string) error {
 	payload := map[string]interface{}{"password": password}
 	response, err := wg.httpClient.POST("/api/session").Body().AsJSON(payload).Send()
@@ -162,13 +152,14 @@ func (wg WgClient) GetConfig(id string) ([]byte, error) {
 	return io.ReadAll(response.RawBody())
 }
 
-func NewWGClient(url, password string) (APIClient, error) {
+func NewWGClient(url, password string) (WgClient, error) {
 	builder := fastshot.NewClient(url)
 	builder = builder.Header().AddContentType(mime.JSON)
-	client := &WgClient{httpClient: builder.Build()}
+	client := WgClient{httpClient: builder.Build()}
 	err := client.authenticate(password)
+
 	if err != nil {
-		return nil, err
+		return client, err
 	}
 
 	return client, nil

@@ -1,12 +1,11 @@
 package command
 
 import (
-	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Delete struct {
-	Client client.APIClient
+	Client APIClient
 }
 
 func (c *Delete) Prepare(output *tgbotapi.MessageConfig) error {

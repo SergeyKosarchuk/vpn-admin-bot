@@ -7,12 +7,12 @@ import (
 type EmptyCommand struct{}
 
 func (c *EmptyCommand) Prepare(output *tgbotapi.MessageConfig) error {
-	output.Text = "Please select a command"
+	output.Text = "Unknown command"
 	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	return nil
 }
 
 func (c *EmptyCommand) Action(text string, output *tgbotapi.MessageConfig) error {
-	output.Text = "Unknown"
+	output.Text = "Please input a command"
 	return nil
 }

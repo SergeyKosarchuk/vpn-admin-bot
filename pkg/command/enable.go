@@ -1,12 +1,11 @@
 package command
 
 import (
-	"github.com/SergeyKosarchuk/vpn-admin-bot/pkg/client"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Enable struct {
-	Client client.APIClient
+	Client APIClient
 }
 
 func (c *Enable) Prepare(output *tgbotapi.MessageConfig) error {
