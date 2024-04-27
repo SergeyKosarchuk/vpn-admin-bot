@@ -1,13 +1,21 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-
-	fastshot "github.com/opus-domini/fast-shot"
-	"github.com/opus-domini/fast-shot/constant/mime"
+	"net/http"
+	"net/http/cookiejar"
 )
+
+const APPLICATION_JSON = "application/json"
+
+type WGClient struct {
+	httpClient *http.Client
+	host       string
+	baseUrl    string
+}
 
 type DeviceResponse struct {
 	Id      string `json:"id"`
@@ -15,40 +23,46 @@ type DeviceResponse struct {
 	Enabled bool   `json:"enabled"`
 }
 
-type WgClient struct {
-	httpClient fastshot.ClientHttpMethods
-	cookie     string
-}
-
-func (wg *WgClient) authenticate(password string) error {
+func (wg WGClient) authenticate(password string) error {
 	payload := map[string]interface{}{"password": password}
-	response, err := wg.httpClient.POST("/api/session").Body().AsJSON(payload).Send()
-	defer response.RawBody().Close()
+	body, err := json.Marshal(payload)
+
 	if err != nil {
 		return err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return fmt.Errorf("unable to create session %d response", response.StatusCode())
+	url := wg.host + "/api/session"
+	response, err := wg.httpClient.Post(url, APPLICATION_JSON, bytes.NewReader(body))
+
+	if err != nil {
+		return err
 	}
 
-	wg.cookie = "connect.sid=" + response.RawResponse.Cookies()[0].Value
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unable to create session %d response", response.StatusCode)
+	}
+
 	return nil
 }
 
-func (wg WgClient) List() ([]DeviceResponse, error) {
+func (wg WGClient) List() ([]DeviceResponse, error) {
 	var devices []DeviceResponse
-	response, err := wg.httpClient.GET("/api/wireguard/client").Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+	response, err := wg.httpClient.Get(wg.baseUrl)
+
 	if err != nil {
 		return devices, err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return devices, fmt.Errorf("unable to fetch devices %d", response.StatusCode())
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return devices, fmt.Errorf("unable to fetch devices %d", response.StatusCode)
 	}
 
-	data, err := io.ReadAll(response.RawBody())
+	data, err := io.ReadAll(response.Body)
+
 	if err != nil {
 		return devices, err
 	}
@@ -61,106 +75,138 @@ func (wg WgClient) List() ([]DeviceResponse, error) {
 	return devices, nil
 }
 
-func (wg WgClient) Enable(id string) error {
-	url := fmt.Sprintf("/api/wireguard/client/%s/enable", id)
-	response, err := wg.httpClient.POST(url).Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+func (wg WGClient) Enable(id string) error {
+	url := fmt.Sprintf("%s/%s/enable", wg.baseUrl, id)
+
+	response, err := wg.httpClient.Post(url, APPLICATION_JSON, nil)
+
 	if err != nil {
 		return err
 	}
 
-	if response.StatusCode() != 204 {
-		return fmt.Errorf("unexpected status code %d", response.StatusCode())
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return nil
 }
 
-func (wg WgClient) Disable(id string) error {
-	url := fmt.Sprintf("/api/wireguard/client/%s/disable", id)
-	response, err := wg.httpClient.POST(url).Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+func (wg WGClient) Disable(id string) error {
+	url := fmt.Sprintf("%s/%s/disable", wg.baseUrl, id)
+
+	response, err := wg.httpClient.Post(url, APPLICATION_JSON, nil)
+
 	if err != nil {
 		return err
 	}
 
-	if response.StatusCode() != 204 {
-		return fmt.Errorf("unexpected status code %d", response.StatusCode())
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return nil
 }
 
-func (wg WgClient) Create(name string) error {
+func (wg WGClient) Create(name string) error {
 	payload := map[string]interface{}{"name": name}
-	builder := wg.httpClient.POST("/api/wireguard/client").Header().Add("Cookie", wg.cookie)
-	response, err := builder.Body().AsJSON(payload).Send()
-	defer response.RawBody().Close()
+	body, err := json.Marshal(payload)
+
 	if err != nil {
 		return err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return fmt.Errorf("unable to create device %d response", response.StatusCode())
+	response, err := wg.httpClient.Post(wg.baseUrl, APPLICATION_JSON, bytes.NewReader(body))
+
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to create device %d response", response.StatusCode)
 	}
 
 	return nil
 }
 
-func (wg WgClient) Delete(id string) error {
-	url := fmt.Sprintf("/api/wireguard/client/%s", id)
-	response, err := wg.httpClient.DELETE(url).Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+func (wg WGClient) Delete(id string) error {
+	url := fmt.Sprintf("%s/%s", wg.baseUrl, id)
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+
 	if err != nil {
 		return err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return fmt.Errorf("unable to delete device %d response", response.StatusCode())
+	response, err := wg.httpClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return nil
 }
 
-func (wg WgClient) GetQRCode(id string) ([]byte, error) {
-	url := fmt.Sprintf("/api/wireguard/client/%s/qrcode.svg", id)
-	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+func (wg WGClient) GetQRCode(id string) ([]byte, error) {
+	url := fmt.Sprintf("%s/%s/qrcode.svg", wg.baseUrl, id)
+	response, err := wg.httpClient.Get(url)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode())
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode)
 	}
 
-	return io.ReadAll(response.RawBody())
+	return io.ReadAll(response.Body)
 }
 
-func (wg WgClient) GetConfig(id string) ([]byte, error) {
-	url := fmt.Sprintf("/api/wireguard/client/%s/configuration", id)
-	response, err := wg.httpClient.GET(url).Header().Add("Cookie", wg.cookie).Send()
-	defer response.RawBody().Close()
+func (wg WGClient) GetConfig(id string) ([]byte, error) {
+	url := fmt.Sprintf("%s/%s/configuration", wg.baseUrl, id)
+	response, err := wg.httpClient.Get(url)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if !response.Is2xxSuccessful() {
-		return nil, fmt.Errorf("unable to get a config %d response", response.StatusCode())
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode)
 	}
 
-	return io.ReadAll(response.RawBody())
+	return io.ReadAll(response.Body)
 }
 
-func NewWGClient(url, password string) (WgClient, error) {
-	builder := fastshot.NewClient(url)
-	builder = builder.Header().AddContentType(mime.JSON)
-	client := WgClient{httpClient: builder.Build()}
-	err := client.authenticate(password)
+func NewWGClient(host, password string) (WGClient, error) {
+	jar, err := cookiejar.New(nil)
+	wg := WGClient{}
 
 	if err != nil {
-		return client, err
+		return wg, err
 	}
 
-	return client, nil
+	wg.httpClient = &http.Client{Jar: jar}
+	wg.host = host
+	wg.baseUrl = host + "/api/wireguard/client"
+	err = wg.authenticate(password)
+
+	if err != nil {
+		return wg, fmt.Errorf("unable to authenticate client %w", err)
+	}
+
+	return wg, nil
 }
