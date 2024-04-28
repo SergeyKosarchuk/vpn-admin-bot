@@ -10,6 +10,5 @@ type APIClient interface {
 	Disable(id string) error
 	Create(name string) error
 	Delete(id string) error
-	GetQRCode(id string) ([]byte, error)
 	GetConfig(id string) ([]byte, error)
 }

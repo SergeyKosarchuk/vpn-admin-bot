@@ -35,6 +35,7 @@ func (c *Config) Action(input string, output *tgbotapi.MessageConfig) error {
 	}
 
 	go func() {
+		// TODO: Wait for gorutine to complete
 		photo := tgbotapi.NewDocument(output.ChatID, tgbotapi.FileBytes{Name: "vpn.conf", Bytes: data})
 		if _, err = c.Bot.Send(photo); err != nil {
 			log.Println(err)
@@ -45,7 +46,7 @@ func (c *Config) Action(input string, output *tgbotapi.MessageConfig) error {
 		return err
 	}
 
-	output.Text = "Ok"
+	output.Text = "Config file will be send in a second."
 	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	return nil
 }
