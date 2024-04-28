@@ -25,5 +25,5 @@ This is simple bot to manage clients from [wg-easy](https://github.com/wg-easy/w
 * /enable - Enable client.
 * /disable - Disable client(disables VPN access).
 * /delete - Delete client. Warning, client can not be restored.
-* /config - Get config file for the device. Can be shared with other person to provide VPN access.
-* ~~/code - Show QR Code to share config~~(command under development)
+* /config - Get client config file. Can be shared with other person to provide VPN access.
+* /qrcode - Get client config encoded in qrcode image with PNG format.

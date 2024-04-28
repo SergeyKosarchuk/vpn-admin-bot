@@ -4,6 +4,7 @@ import (
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/skip2/go-qrcode"
 )
 
 type ShowQRCode struct {
@@ -28,23 +29,26 @@ func (c *ShowQRCode) Action(input string, output *tgbotapi.MessageConfig) error 
 		return err
 	}
 
-	data, err := c.Client.GetQRCode(id)
+	data, err := c.Client.GetConfig(id)
 
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		photo := tgbotapi.NewPhoto(output.ChatID, tgbotapi.FileBytes{Name: "qrcode.svg", Bytes: data})
-		if _, err = c.Bot.Send(photo); err != nil {
-			// TOTO: SVG files are not supported
+		// TODO: Wait for gorutine to complete
+		png, err := qrcode.Encode(string(data), qrcode.Medium, 512)
+
+		if err != nil {
 			log.Println(err)
+		} else {
+			photo := tgbotapi.NewPhoto(output.ChatID, tgbotapi.FileBytes{Name: "qrcode.png", Bytes: png})
+
+			if _, err = c.Bot.Send(photo); err != nil {
+				log.Println(err)
+			}
 		}
 	}()
-
-	if err != nil {
-		return err
-	}
 
 	output.Text = "QR Code will be send in a second."
 	output.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)

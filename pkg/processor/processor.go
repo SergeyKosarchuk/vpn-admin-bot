@@ -77,6 +77,7 @@ func NewMessageProcessor(adminUsername string, client botCommand.APIClient, bot 
 	commands["disable"] = &botCommand.Disable{Client: client}
 	commands["delete"] = &botCommand.Delete{Client: client}
 	commands["config"] = &botCommand.Config{Client: client, Bot: bot}
+	commands["qrcode"] = &botCommand.ShowQRCode{Client: client, Bot: bot}
 	processor := MessageProcessor{adminUsername: adminUsername, commands: commands, defaultCommand: &botCommand.EmptyCommand{}}
 
 	return processor

@@ -23,6 +23,7 @@ type DeviceResponse struct {
 	Enabled bool   `json:"enabled"`
 }
 
+// Authenticate client using password
 func (wg WGClient) authenticate(password string) error {
 	payload := map[string]interface{}{"password": password}
 	body, err := json.Marshal(payload)
@@ -47,6 +48,7 @@ func (wg WGClient) authenticate(password string) error {
 	return nil
 }
 
+// Get list of clients
 func (wg WGClient) List() ([]DeviceResponse, error) {
 	var devices []DeviceResponse
 	response, err := wg.httpClient.Get(wg.baseUrl)
@@ -75,6 +77,7 @@ func (wg WGClient) List() ([]DeviceResponse, error) {
 	return devices, nil
 }
 
+// Enable client
 func (wg WGClient) Enable(id string) error {
 	url := fmt.Sprintf("%s/%s/enable", wg.baseUrl, id)
 
@@ -93,6 +96,7 @@ func (wg WGClient) Enable(id string) error {
 	return nil
 }
 
+// Disable client
 func (wg WGClient) Disable(id string) error {
 	url := fmt.Sprintf("%s/%s/disable", wg.baseUrl, id)
 
@@ -111,6 +115,7 @@ func (wg WGClient) Disable(id string) error {
 	return nil
 }
 
+// Create new client with the given name
 func (wg WGClient) Create(name string) error {
 	payload := map[string]interface{}{"name": name}
 	body, err := json.Marshal(payload)
@@ -134,6 +139,7 @@ func (wg WGClient) Create(name string) error {
 	return nil
 }
 
+// Permamently delete client
 func (wg WGClient) Delete(id string) error {
 	url := fmt.Sprintf("%s/%s", wg.baseUrl, id)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
@@ -157,23 +163,7 @@ func (wg WGClient) Delete(id string) error {
 	return nil
 }
 
-func (wg WGClient) GetQRCode(id string) ([]byte, error) {
-	url := fmt.Sprintf("%s/%s/qrcode.svg", wg.baseUrl, id)
-	response, err := wg.httpClient.Get(url)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode)
-	}
-
-	return io.ReadAll(response.Body)
-}
-
+// Get client config as bytes
 func (wg WGClient) GetConfig(id string) ([]byte, error) {
 	url := fmt.Sprintf("%s/%s/configuration", wg.baseUrl, id)
 	response, err := wg.httpClient.Get(url)
@@ -191,6 +181,7 @@ func (wg WGClient) GetConfig(id string) ([]byte, error) {
 	return io.ReadAll(response.Body)
 }
 
+// Create authenticated client ready to use
 func NewWGClient(host, password string) (WGClient, error) {
 	jar, err := cookiejar.New(nil)
 	wg := WGClient{}
