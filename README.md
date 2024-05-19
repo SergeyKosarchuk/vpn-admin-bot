@@ -17,6 +17,10 @@ This is simple bot to manage clients from [wg-easy](https://github.com/wg-easy/w
 
 4. Start bot `go run main.go`.
 
+## Project structure
+All initialization is placed in `main.go` file and business logic is in `pkg` folder.
+
+
 ## Supported commands
 
 * /ping - PONG

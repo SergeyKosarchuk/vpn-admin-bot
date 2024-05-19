@@ -50,6 +50,7 @@ func (mp *MessageProcessor) resposeToCommand(commandName string, output *tgbotap
 	return errors.New("default command is nil")
 }
 
+// Process message from user and prepare response
 func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.MessageConfig, error) {
 	var err error
 	response := tgbotapi.NewMessage(input.Chat.ID, "")
@@ -68,11 +69,12 @@ func (mp *MessageProcessor) MakeResponse(input tgbotapi.Message) (tgbotapi.Messa
 	return response, err
 }
 
+// Create new MessageProcessor
 func NewMessageProcessor(adminUsername string, client botCommand.APIClient, bot *tgbotapi.BotAPI) MessageProcessor {
 	commands := make(map[string]Command)
-	commands["ping"] = &botCommand.PingCommand{}
+	commands["ping"] = &botCommand.Ping{}
 	commands["list"] = &botCommand.List{Client: client}
-	commands["create"] = &botCommand.CreateCommand{Client: client}
+	commands["create"] = &botCommand.Create{Client: client}
 	commands["enable"] = &botCommand.Enable{Client: client}
 	commands["disable"] = &botCommand.Disable{Client: client}
 	commands["delete"] = &botCommand.Delete{Client: client}

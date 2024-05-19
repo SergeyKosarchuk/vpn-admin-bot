@@ -11,6 +11,7 @@ import (
 
 const APPLICATION_JSON = "application/json"
 
+// Wrapper around `net/http` to make HTTP requests to the admin REST API.
 type WGClient struct {
 	httpClient *http.Client
 	host       string
@@ -130,6 +131,7 @@ func (wg WGClient) Create(name string) error {
 		return err
 	}
 
+	// There are no `id` field in response so we are unable to return `DeviceResponse`.
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
@@ -183,6 +185,7 @@ func (wg WGClient) GetConfig(id string) ([]byte, error) {
 
 // Create authenticated client ready to use
 func NewWGClient(host, password string) (WGClient, error) {
+	// Use non-empty cookiejar to save sessionid cookie from authenticate request.
 	jar, err := cookiejar.New(nil)
 	wg := WGClient{}
 
