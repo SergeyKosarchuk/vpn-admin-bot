@@ -1,12 +1,13 @@
-# Telegram easy vpn admin
+# VPN admin bot
 
-This is simple bot to manage clients from [wg-easy](https://github.com/wg-easy/wg-easy) with telegram. Currently it expects only one person - an admin and uses undocumented REST API.
+This is simple Telegram bot to manage clients from [wg-easy](https://github.com/wg-easy/wg-easy). Currently it expects only one person - an admin and uses undocumented REST API.
+
 
 ## How to run your own bot
 
 1. Register new bot using [BotFather](https://core.telegram.org/bots/features#creating-a-new-bot) and save api token somewhere.
-2. Run wg-easy with docker or docker compose. Make sure to open dashboard port(51821 TCP by default) to your bot.
-3. Provide these environment variables before run. You can add `export` to .bashrc or configure IDE.
+2. Run wg-easy with docker or docker compose and make sure admin dashboard port is reachable from bot.
+3. Provide these environment variables before run.
 
     ```bash
     TELEGRAM_API_TOKEN=token from botfather
