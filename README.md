@@ -20,6 +20,8 @@ This is simple bot to manage clients from [wg-easy](https://github.com/wg-easy/w
 ## Project structure
 All initialization is placed in `main.go` file and business logic is in `pkg` folder.
 
+## Development
+Use command `go test ./...` in root folder to run tests and `golangci-lint run` to run linter.
 
 ## Supported commands
 
