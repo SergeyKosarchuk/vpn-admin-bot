@@ -1,3 +1,4 @@
+// Package command implements Wrapper around `net/http` to make HTTP requests to the admin REST API.
 package command
 
 import (

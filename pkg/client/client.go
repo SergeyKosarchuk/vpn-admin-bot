@@ -1,3 +1,4 @@
+// Package client implements Wrapper around `net/http` to make HTTP requests to the admin REST API.
 package client
 
 import (
@@ -11,7 +12,6 @@ import (
 
 const APPLICATION_JSON = "application/json"
 
-// Wrapper around `net/http` to make HTTP requests to the admin REST API.
 type WGClient struct {
 	httpClient *http.Client
 	host       string
@@ -24,7 +24,6 @@ type DeviceResponse struct {
 	Enabled bool   `json:"enabled"`
 }
 
-// Authenticate client using password
 func (wg WGClient) authenticate(password string) error {
 	payload := map[string]interface{}{"password": password}
 	body, err := json.Marshal(payload)
@@ -43,13 +42,13 @@ func (wg WGClient) authenticate(password string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unable to create session %d response", response.StatusCode)
+		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return nil
 }
 
-// Get list of clients
+// List - returns list of all clients.
 func (wg WGClient) List() ([]DeviceResponse, error) {
 	var devices []DeviceResponse
 	response, err := wg.httpClient.Get(wg.baseUrl)
@@ -61,7 +60,7 @@ func (wg WGClient) List() ([]DeviceResponse, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return devices, fmt.Errorf("unable to fetch devices %d", response.StatusCode)
+		return devices, fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	data, err := io.ReadAll(response.Body)
@@ -78,7 +77,7 @@ func (wg WGClient) List() ([]DeviceResponse, error) {
 	return devices, nil
 }
 
-// Enable client
+// Enable client by id.
 func (wg WGClient) Enable(id string) error {
 	url := fmt.Sprintf("%s/%s/enable", wg.baseUrl, id)
 
@@ -97,7 +96,7 @@ func (wg WGClient) Enable(id string) error {
 	return nil
 }
 
-// Disable client
+// Disable client by id.
 func (wg WGClient) Disable(id string) error {
 	url := fmt.Sprintf("%s/%s/disable", wg.baseUrl, id)
 
@@ -116,7 +115,7 @@ func (wg WGClient) Disable(id string) error {
 	return nil
 }
 
-// Create new client with the given name
+// Create new client with the given name.
 func (wg WGClient) Create(name string) error {
 	payload := map[string]interface{}{"name": name}
 	body, err := json.Marshal(payload)
@@ -135,13 +134,13 @@ func (wg WGClient) Create(name string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("unable to create device %d response", response.StatusCode)
+		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return nil
 }
 
-// Permamently delete client
+// Delete client by id.
 func (wg WGClient) Delete(id string) error {
 	url := fmt.Sprintf("%s/%s", wg.baseUrl, id)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
@@ -165,7 +164,7 @@ func (wg WGClient) Delete(id string) error {
 	return nil
 }
 
-// Get client config as bytes
+// GetConfig returns encoded client config by id.
 func (wg WGClient) GetConfig(id string) ([]byte, error) {
 	url := fmt.Sprintf("%s/%s/configuration", wg.baseUrl, id)
 	response, err := wg.httpClient.Get(url)
@@ -177,13 +176,13 @@ func (wg WGClient) GetConfig(id string) ([]byte, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to get a qr code %d response", response.StatusCode)
+		return nil, fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
 	return io.ReadAll(response.Body)
 }
 
-// Create authenticated client ready to use
+// Create authenticated `WGClient` ready to use.
 func NewWGClient(host, password string) (WGClient, error) {
 	// Use non-empty cookiejar to save sessionid cookie from authenticate request.
 	jar, err := cookiejar.New(nil)
@@ -199,7 +198,7 @@ func NewWGClient(host, password string) (WGClient, error) {
 	err = wg.authenticate(password)
 
 	if err != nil {
-		return wg, fmt.Errorf("unable to authenticate client %w", err)
+		return wg, fmt.Errorf("unable to authenticate a client %w", err)
 	}
 
 	return wg, nil
