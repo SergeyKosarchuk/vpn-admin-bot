@@ -12,8 +12,8 @@ This is simple Telegram bot to manage clients from [wg-easy](https://github.com/
     ```bash
     TELEGRAM_API_TOKEN=token from botfather
     TELEGRAM_USERNAME=case sensetive telegram username without@
-    VPN_ADMIN_URL=http://<host>:<port>/
-    VPN_ADMIN_PASSWORD_HASH=🚨YOUR_ADMIN_PASSWORD_HASH
+    VPN_ADMIN_URL=http://<host>:<port>
+    VPN_ADMIN_PASSWORD=🚨YOUR_ADMIN_PASSWORD
     ```
 
 4. Start bot `go run main.go`.
