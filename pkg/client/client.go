@@ -41,7 +41,7 @@ func (wg WGClient) authenticate(password string) error {
 
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusNoContent {
+	if response.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status code %d", response.StatusCode)
 	}
 
