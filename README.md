@@ -1,6 +1,6 @@
 # VPN admin bot
 
-This is simple Telegram bot to manage clients from [wg-easy](https://github.com/wg-easy/wg-easy). Currently it expects only one person - an admin and uses undocumented REST API. Last supported version 
+This is simple Telegram bot to manage clients from [wg-easy](https://github.com/wg-easy/wg-easy). Currently it supports only one user - an admin and uses undocumented REST API.
 
 
 ## How to run your own bot
